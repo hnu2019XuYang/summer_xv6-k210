@@ -5,9 +5,20 @@
 int test_times()
 {
 	struct tms t;
-	clock_t ticks = times(&t);
-	printf("the usertime of the process: %d\n",ticks);
-	printf("utime:%d,stime:%d,cutime:%d,cstime:%d\n",t.utime,t.stime,t.cutime,t.cstime);
+	int status;
+	int pid = fork();
+	if(pid > 0){
+		wait(&status);
+		clock_t ticks = times(&t);
+		printf("parent process:\n");
+		printf("the total time: %d\n",ticks);
+		printf("utime:%d,stime:%d,cutime:%d,cstime:%d\n",t.utime,t.stime,t.cutime,t.cstime);
+	}else if(pid == 0){
+		printf("Hello from child process!\n");
+		exit(0);
+	}else{
+		printf("fork error\n");
+	}
 	return 0;
 }
 

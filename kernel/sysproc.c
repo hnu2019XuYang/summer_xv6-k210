@@ -160,3 +160,8 @@ sys_getppid(void)
 {
   return myproc()->parent->pid;
 }
+
+uint64 sys_getmem(void)
+{
+  return myproc()->sz/1024;
+}

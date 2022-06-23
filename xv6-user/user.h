@@ -38,6 +38,7 @@ int rename(char *old, char *new);
 // add
 int getppid(void);
 clock_t times(struct tms*);
+int getmem(void);
 
 // ulib.c
 int stat(const char*, struct stat*);

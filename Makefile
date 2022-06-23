@@ -207,6 +207,7 @@ UPROGS=\
 	$U/_getpid\
 	$U/_getppid\
 	$U/_times\
+	$U/_getmem\
 
 	# $U/_forktest\
 	# $U/_ln\

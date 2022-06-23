@@ -57,6 +57,12 @@ procinit(void)
   for(p = proc; p < &proc[NPROC]; p++) {
       initlock(&p->lock, "proc");
 
+      // times for process performance 
+      p->proc_tms.utime = 0;
+      p->proc_tms.stime = 0;
+      p->proc_tms.cutime = 0;
+      p->proc_tms.cstime = 0;
+
       // Allocate a page for the process's kernel stack.
       // Map it high in memory, followed by an invalid
       // guard page.
@@ -503,6 +509,11 @@ wait(uint64 addr)
             release(&p->lock);
             return -1;
           }
+
+          // add child's tms time 
+          p->proc_tms.cstime += np->proc_tms.stime + np->proc_tms.cstime;
+          p->proc_tms.cutime += np->proc_tms.utime + np->proc_tms.cutime;
+
           freeproc(np);
           release(&np->lock);
           release(&p->lock);
@@ -594,9 +605,13 @@ sched(void)
   if(intr_get())
     panic("sched interruptible");
 
+  p->proc_tms.stime += r_time() - p->ikstmp;
+
   intena = mycpu()->intena;
   swtch(&p->context, &mycpu()->context);
   mycpu()->intena = intena;
+
+  p->ikstmp = r_time();
 }
 
 // Give up the CPU for one scheduling round.
@@ -631,6 +646,7 @@ forkret(void)
     myproc()->cwd = ename("/");
   }
 
+  myproc()->ikstmp = r_time();
   usertrapret();
 }
 
