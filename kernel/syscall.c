@@ -241,19 +241,15 @@ sys_times(void)
     return -1;
   }
 
-  struct tms t;
+  struct tms* t = (struct tms*)addr;
 
   clock_t timeval;
 
   timeval = r_time();
-  t.utime = timeval;
-  t.stime = 0;
-  t.cutime = 0;
-  t.cstime = 0;
-
-  if (copyout2(addr, (char *)&t, sizeof(t)) < 0) {
-    return -1;
-  }
+  t->utime = timeval;
+  t->stime = 0;
+  t->cutime = 0;
+  t->cstime = 0;
 
   return timeval;
 }
