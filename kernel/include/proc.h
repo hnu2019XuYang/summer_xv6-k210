@@ -9,6 +9,7 @@
 #include "fat32.h"
 #include "trap.h"
 #include "times.h"
+#include "signal.h"
 
 // Saved registers for kernel context switches.
 struct context {
@@ -70,6 +71,14 @@ struct proc {
   struct dirent *cwd;          // Current directory
   char name[16];               // Process name (debugging)
   int tmask;                    // trace mask
+
+  //alarm & ticks
+  uint64 ticks;
+  uint64 alarm;
+
+  //signal
+  uint64 sigflag;
+  struct sigaction sigact[2];
 };
 
 void            reg_info(void);
@@ -79,7 +88,7 @@ int             fork(void);
 int             growproc(int);
 pagetable_t     proc_pagetable(struct proc *);
 void            proc_freepagetable(pagetable_t, uint64);
-int             kill(int);
+int             kill(int,int);
 struct cpu*     mycpu(void);
 struct cpu*     getmycpu(void);
 struct proc*    myproc();
@@ -97,5 +106,6 @@ int             either_copyin(void *dst, int user_src, uint64 src, uint64 len);
 void            procdump(void);
 uint64          procnum(void);
 void            test_proc_init(int);
+void            procint(void);
 
 #endif

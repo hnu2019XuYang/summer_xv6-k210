@@ -2,6 +2,7 @@
 #include "kernel/include/stat.h"
 #include "kernel/include/fcntl.h"
 #include "kernel/include/times.h"
+#include "kernel/include/signal.h"
 
 struct stat;
 struct rtcdate;
@@ -16,7 +17,7 @@ int pipe(int*);
 int write(int fd, const void *buf, int len);
 int read(int fd, void *buf, int len);
 int close(int fd);
-int kill(int pid);
+int kill(int pid,int sig);
 int exec(char*, char**);
 int open(const char *filename, int mode);
 int fstat(int fd, struct stat*);
@@ -39,6 +40,9 @@ int rename(char *old, char *new);
 int getppid(void);
 clock_t times(struct tms*);
 int getmem(void);
+uint alarm(uint seconds);
+void pause(void);
+void (*signal(int sig, void (*func)(int)))(int);
 
 // ulib.c
 int stat(const char*, struct stat*);

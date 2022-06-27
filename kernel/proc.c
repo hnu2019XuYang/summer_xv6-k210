@@ -31,6 +31,9 @@ static void freeproc(struct proc *p);
 
 extern char trampoline[]; // trampoline.S
 
+extern struct spinlock tickslock;
+extern uint ticks;
+
 void reg_info(void) {
   printf("register info: {\n");
   printf("sstatus: %p\n", r_sstatus());
@@ -62,7 +65,14 @@ procinit(void)
       p->proc_tms.stime = 0;
       p->proc_tms.cutime = 0;
       p->proc_tms.cstime = 0;
-
+      p->ikstmp = p->okstmp = r_time();
+      p->ticks = 0;
+      p->alarm = 0;
+      p->sigflag = 0;
+      p->sigact[0].sig = SIGALRM;
+      p->sigact[0].handler = SIG_DEF;
+      p->sigact[1].sig = SIGINT;
+      p->sigact[1].handler = SIG_DEF;
       // Allocate a page for the process's kernel stack.
       // Map it high in memory, followed by an invalid
       // guard page.
@@ -524,7 +534,7 @@ wait(uint64 addr)
     }
 
     // No point waiting if we don't have any children.
-    if(!havekids || p->killed){
+    if(!havekids || p->killed == SIGTERM){
       release(&p->lock);
       return -1;
     }
@@ -552,11 +562,10 @@ scheduler(void)
   for(;;){
     // Avoid deadlock by ensuring that devices can interrupt.
     intr_on();
-    
     int found = 0;
     for(p = proc; p < &proc[NPROC]; p++) {
       acquire(&p->lock);
-      if(p->state == RUNNABLE) {
+      if(p->state == RUNNABLE ) {
         // Switch to chosen process.  It is the process's job
         // to release its lock and then reacquire it
         // before jumping back to us.
@@ -573,6 +582,16 @@ scheduler(void)
         c->proc = 0;
 
         found = 1;
+      }else if(p->state == SLEEPING && p->alarm > 0){
+        uint xticks;
+        acquire(&tickslock);
+        xticks = ticks;
+        release(&tickslock);
+        if(p->ticks + p->alarm*2 <= xticks){
+            p->killed = SIGALRM;
+            p->ticks = 0;
+            p->alarm = 0;
+        }
       }
       release(&p->lock);
     }
@@ -716,14 +735,14 @@ wakeup1(struct proc *p)
 // The victim won't exit until it tries to return
 // to user space (see usertrap() in trap.c).
 int
-kill(int pid)
+kill(int pid, int sig)
 {
   struct proc *p;
 
   for(p = proc; p < &proc[NPROC]; p++){
     acquire(&p->lock);
     if(p->pid == pid){
-      p->killed = 1;
+      p->killed = sig;
       if(p->state == SLEEPING){
         // Wake process from sleep().
         p->state = RUNNABLE;
@@ -812,3 +831,19 @@ procnum(void)
   return num;
 }
 
+void procint(void)
+{
+  int flag = 0;
+  struct proc *p;
+  for(p = proc; p < &proc[NPROC]; p++){
+      if(p->pid > 2){
+        if(p->state == RUNNING || p->state == RUNNABLE || p->state == SLEEPING){
+          kill(p->pid,SIGINT);
+          flag = 1;
+        }
+      }
+  }
+  if(!flag){
+    printf("\n-> / $");
+  }
+}

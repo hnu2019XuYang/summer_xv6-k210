@@ -142,12 +142,12 @@ go(int which_child)
         printf("chdir failed\n");
         exit(1);
       }
-      kill(pid);
+      kill(pid,SIGTERM);
       wait(0);
     } else if(what == 18){
       int pid = fork();
       if(pid == 0){
-        kill(getpid());
+        kill(getpid(),SIGTERM);
         exit(0);
       } else if(pid < 0){
         printf("grind: fork failed\n");
@@ -323,8 +323,8 @@ iter()
   int st1 = -1;
   wait(&st1);
   if(st1 != 0){
-    kill(pid1);
-    kill(pid2);
+    kill(pid1,SIGTERM);
+    kill(pid2,SIGTERM);
   }
   int st2 = -1;
   wait(&st2);

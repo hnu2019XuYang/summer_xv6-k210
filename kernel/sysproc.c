@@ -10,6 +10,7 @@
 #include "include/kalloc.h"
 #include "include/string.h"
 #include "include/printf.h"
+#include "include/signal.h"
 
 extern int exec(char *path, char **argv);
 
@@ -124,11 +125,11 @@ sys_sleep(void)
 uint64
 sys_kill(void)
 {
-  int pid;
+  int pid,sig;
 
-  if(argint(0, &pid) < 0)
+  if(argint(0, &pid) < 0 || argint(0, &sig) < 0)
     return -1;
-  return kill(pid);
+  return kill(pid,sig);
 }
 
 // return how many clock tick interrupts have occurred
@@ -164,4 +165,52 @@ sys_getppid(void)
 uint64 sys_getmem(void)
 {
   return myproc()->sz/1024;
+}
+
+uint64 sys_alarm(void)
+{
+  int seconds;
+  if(argint(0, &seconds) < 0)
+    return -1;
+  struct proc* p = myproc();
+  p->ticks = ticks;
+  p->alarm = seconds*5;
+  return 0;
+}
+
+uint64 sys_pause(void)
+{
+  struct proc* p = myproc();
+  printf("pause: waiting for signal to wake up!\n");
+  // p->state = SLEEPING;
+  // scheduler();
+  acquire(&tickslock);
+  while(p->killed == 0){
+    if(p->killed == SIGTERM){
+      release(&tickslock);
+      return -1;
+    }
+    sleep(&ticks, &tickslock);
+  }
+  release(&tickslock);
+  return 0;
+}
+
+uint64 sys_signal(void)
+{
+  uint64 sig;
+  func handler;
+  if (argaddr(0, &sig) < 0 || argaddr(1, (uint64*)&handler) < 0) {
+    return -1;
+  }
+  // printf("signal:%d,%d\n",sig,handler);
+  struct proc* p = myproc();
+  int i = 0;
+  for(i=0;i<2;i++){
+    if(sig == p->sigact[i].sig){
+      p->sigact[i].handler = handler;
+      break;
+    }
+  }
+  return 0;
 }

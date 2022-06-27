@@ -10,7 +10,7 @@ int test_times()
 	if(pid > 0){
 		wait(&status);
 		clock_t ticks = times(&t);
-		printf("parent process:\n");
+		printf("parent process:%d\n",getpid());
 		printf("the total time: %d\n",ticks);
 		printf("utime:%d,stime:%d,cutime:%d,cstime:%d\n",t.utime,t.stime,t.cutime,t.cstime);
 	}else if(pid == 0){

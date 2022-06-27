@@ -156,6 +156,8 @@ int exec(char *path, char **argv)
   p->kpagetable = kpagetable;
   p->sz = sz;
   p->trapframe->epc = elf.entry;  // initial program counter = main
+  // p->origin_epc = p->trapframe->epc;
+  // printf("name: %s, init epc:%d\n",p->name,p->trapframe->epc);
   p->trapframe->sp = sp; // initial stack pointer
   proc_freepagetable(oldpagetable, oldsz);
   w_satp(MAKE_SATP(p->kpagetable));

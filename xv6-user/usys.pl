@@ -44,3 +44,6 @@ entry("rename");
 entry("getppid");
 entry("times");
 entry("getmem");
+entry("alarm");
+entry("pause");
+entry("signal");

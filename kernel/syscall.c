@@ -121,6 +121,9 @@ extern uint64 sys_rename(void);
 extern uint64 sys_getppid(void);
 extern uint64 sys_times(void);
 extern uint64 sys_getmem(void);
+extern uint64 sys_alarm(void);
+extern uint64 sys_pause(void);
+extern uint64 sys_signal(void);
 
 static uint64 (*syscalls[])(void) = {
   [SYS_fork]        sys_fork,
@@ -152,6 +155,9 @@ static uint64 (*syscalls[])(void) = {
   [SYS_getppid]     sys_getppid,
   [SYS_times]       sys_times,
   [SYS_getmem]      sys_getmem,
+  [SYS_alarm]       sys_alarm,
+  [SYS_pause]       sys_pause,
+  [SYS_signal]      sys_signal,
 };
 
 static char *sysnames[] = {
@@ -184,6 +190,9 @@ static char *sysnames[] = {
   [SYS_getppid]     "getppid",
   [SYS_times]       "times",
   [SYS_getmem]      "getmem",
+  [SYS_alarm]       "alarm",
+  [SYS_pause]       "pause",
+  [SYS_signal]      "signal",
 };
 
 void
@@ -193,6 +202,10 @@ syscall(void)
   struct proc *p = myproc();
 
   num = p->trapframe->a7;
+  // if(p->killed != 0 && p->killed != SIGTERM){
+  //   sigreturn();
+  // }
+  // else 
   if(num > 0 && num < NELEM(syscalls) && syscalls[num]) {
     p->trapframe->a0 = syscalls[num]();
         // trace
