@@ -223,6 +223,11 @@ sys_mkdir(void)
   }
   eunlock(ep);
   eput(ep);
+
+  //2022.8.23
+  // if(strncmp(path, "/proc", 5) == 0 || strncmp(path, "proc", 4) == 0){
+  //   linkproc();
+  // }
   return 0;
 }
 

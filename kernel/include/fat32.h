@@ -23,6 +23,16 @@
 #define FAT32_MAX_PATH      260
 #define ENTRY_CACHE_NUM     50
 
+struct dirent;
+
+//add 2022.8.22
+struct dirent_functions {  
+    // void (*epopulate)(struct dirent*);                   // fill in dirent details
+    // void (*eupdate)(struct dirent*);                     // write dirent details back to disk
+    int (*eread)(struct dirent*, int, uint64, uint, uint);     // read from file contents
+    // int (*ewrite)(struct dirent*, int, uint64, uint, uint);    // write to file contents
+}; 
+
 struct dirent {
     char  filename[FAT32_MAX_FILENAME + 1];
     uint8   attribute;
@@ -48,6 +58,8 @@ struct dirent {
     struct dirent *next;
     struct dirent *prev;
     struct sleeplock    lock;
+
+    struct dirent_functions *e_func;
 };
 
 int             fat32_init(void);
@@ -68,5 +80,15 @@ struct dirent*  ename(char *path);
 struct dirent*  enameparent(char *path, char *name);
 int             eread(struct dirent *entry, int user_dst, uint64 dst, uint off, uint n);
 int             ewrite(struct dirent *entry, int user_src, uint64 src, uint off, uint n);
+
+//add 2022.8.22
+// fs-specific functions that should only be accessed through dirent->e_func
+int             procfs_eread(struct dirent*, int, uint64, uint, uint);
+// void            epopulate(struct dirent* ep);
+// void            procfs_epopulate(struct dirent* ep);
+
+void            linkproc(void);
+struct dirent*  ealloc_inmemory(struct dirent *dp, char *name, int attr);
+struct dirent*  deget(struct dirent *parent, char *name);
 
 #endif

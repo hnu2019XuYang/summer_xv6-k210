@@ -13,8 +13,7 @@ void sighandle(void)
 	for(i=0;i<2;i++){
 		if(signum == p->sigact[i].sig){
 			if(p->sigact[i].handler == SIG_DEF){
-				p->killed = 0;
-				kill(p->pid,SIGTERM);		
+				exit(-1);		
 			}else if(p->sigact[i].handler == SIG_IGN){
 				p->killed = 0;
 				break;

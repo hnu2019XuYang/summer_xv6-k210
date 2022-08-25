@@ -141,3 +141,62 @@ strchr(const char *s, char c)
       return (char*)s;
   return 0;
 }
+
+char* strcat(char *dst, const char *src)
+{
+  char *tmp = dst;
+  while(*dst)
+    dst++;
+  while((*dst++ = *src++) != '\0');
+  return tmp;
+}
+
+void itoa(uint n, char* s)
+{
+  int i, sign;       
+  if ((sign = n) < 0)  /* record sign */
+    n = -n;          /* make n positive */
+  i = 0;
+  do {       /* generate digits in reverse order */
+    s[i++] = n % 10 + '0';   /* get next digit */
+  } while ((n /= 10) > 0);     /* delete it */
+  if (sign < 0)
+    s[i++] = '-';
+  s[i] = '\0';
+  int  j;
+  char c;             
+  for (i = 0, j = strlen(s)-1; i<j; i++, j--) {
+    c = s[i];
+    s[i] = s[j];
+    s[j] = c;
+  }
+}
+
+int atoi(const char* str)
+{
+  int s=0;
+  int flag=0;  
+  while(*str==' ')
+  {
+    str++;
+  }
+ 
+  if(*str=='-'||*str=='+')
+  {
+    if(*str=='-')
+    flag=1;
+    str++;
+  }
+ 
+  while(*str>='0'&&*str<='9')
+  {
+    s=s*10+*str-'0';
+    str++;
+    if(s<0)
+    {
+      s=2147483647;
+      break;
+    }
+  }
+  return s*(flag?-1:1);
+}

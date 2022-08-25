@@ -88,7 +88,7 @@ usertrap(void)
   else if((which_dev = devintr()) != 0){
     // ok
     if(which_dev == 2){ //clock interrupt
-        printf("pid: %d, name: %s, epc: %d\n", p->pid, p->name, p->trapframe->epc);
+        // printf("pid: %d, name: %s, epc: %d\n", p->pid, p->name, p->trapframe->epc);
         if(p->alarm > 0){
           p->alarm--;
           // printf("process ticks:%d\n",p->alarm);

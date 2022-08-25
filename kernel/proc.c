@@ -836,7 +836,7 @@ void procint(void)
   int flag = 0;
   struct proc *p;
   for(p = proc; p < &proc[NPROC]; p++){
-      if(p->pid > 2){
+      if(p->pid > 2 && p->parent->pid == 2 ){
         if(p->state == RUNNING || p->state == RUNNABLE || p->state == SLEEPING){
           kill(p->pid,SIGINT);
           flag = 1;
@@ -844,6 +844,80 @@ void procint(void)
       }
   }
   if(!flag){
-    printf("\n-> / $");
+    printf("\n-> / $ ");
   }
+}
+
+void proc_read(int pid, char* s)
+{
+  struct proc *p;
+  for(p = proc; p < &proc[NPROC]; p++) {
+    if(pid == p->pid)
+    {
+      break;
+    }
+  }
+  s[0] = '\0';
+  strcat(s,"pid\tcommand\t\tstate\t\tppid\tutime\tstime\tcutime\tcstime\tvsz\n");
+  char tmp[128];
+  itoa(p->pid,tmp);
+  strcat(s,tmp);
+  strcat(s,"\t");
+  strcat(s,p->name);
+  strcat(s,"\t\t");
+  if(p->state == UNUSED){
+    strcat(s,"UNUSED\t\t");
+  }else if(p->state == SLEEPING){
+    strcat(s,"SLEEPING\t");
+  }else if(p->state == RUNNABLE){
+    strcat(s,"RUNNABLE\t");
+  }else if(p->state == RUNNING){
+    strcat(s,"RUNNING\t\t");
+  }else{
+    strcat(s,"ZOMBIE\t\t");
+  }
+  itoa(p->parent->pid,tmp);
+  strcat(s,tmp);
+  strcat(s,"\t");
+  itoa(p->proc_tms.utime,tmp);
+  strcat(s,tmp);
+  strcat(s,"\t");
+  itoa(p->proc_tms.stime,tmp);
+  strcat(s,tmp);
+  strcat(s,"\t");
+  itoa(p->proc_tms.cutime,tmp);
+  strcat(s,tmp);
+  strcat(s,"\t");
+  itoa(p->proc_tms.cstime,tmp);
+  strcat(s,tmp);
+  strcat(s,"\t");
+  itoa(p->sz,tmp);
+  strcat(s,tmp);
+  strcat(s,"\n");
+}
+
+int getPids(int* pids)
+{
+  struct proc *p;
+  int cnt = 0;
+  for(p = proc; p < &proc[NPROC]; p++) {
+    if(p->state != ZOMBIE && p->state != UNUSED) {
+      pids[cnt++] = p->pid;
+    } 
+  }
+  return cnt;
+}
+
+int checkPid(int pid)
+{
+  struct proc *p;
+  for(p = proc; p < &proc[NPROC]; p++) {
+    if(pid == p->pid)
+    {
+      if(p->state != ZOMBIE && p->state != UNUSED)
+        return 1;
+      return 0;
+    }
+  }
+  return 0;
 }

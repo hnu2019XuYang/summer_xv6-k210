@@ -134,7 +134,7 @@ fileread(struct file *f, uint64 addr, int n)
         break;
     case FD_ENTRY:
         elock(f->ep);
-          if((r = eread(f->ep, 1, addr, f->off, n)) > 0)
+          if((r = f->ep->e_func->eread(f->ep, 1, addr, f->off, n)) > 0)
             f->off += r;
         eunlock(f->ep);
         break;
@@ -197,7 +197,32 @@ dirnext(struct file *f, uint64 addr)
   }
   eunlock(f->ep);
   if (ret == -1)
+  {
+    if(strncmp(f->ep->filename, "proc", 4) == 0)
+    {
+      int pids[NPROC];
+      int cnt = getPids(pids);
+      int i = 0;
+      for(i = 0; i < cnt; i++)
+      {
+        // char dirname[32];
+        // struct dirent *tmp;
+        // itoa(pids[i],dirname);
+        // tmp = ealloc_inmemory(f->ep,dirname,ATTR_DIRECTORY);
+        // ealloc_inmemory(tmp,"stat",ATTR_ARCHIVE);
+        printf("%d\t\t\t\t DIR \t0\n",pids[i]);
+      }
+    }
+    else if(strncmp(f->ep->parent->filename, "proc", 4) == 0)
+    {
+      struct dirent *sep = deget(f->ep,"stat");
+      if(sep != NULL)
+      {
+        printf("%s\t\t\t\t FILE\t0\n",sep->filename);
+      }
+    }
     return 0;
+  }
 
   f->off += count * 32;
   estat(&de, &st);

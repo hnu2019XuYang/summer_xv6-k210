@@ -186,10 +186,6 @@ uint64 sys_pause(void)
   // scheduler();
   acquire(&tickslock);
   while(p->killed == 0){
-    if(p->killed == SIGTERM){
-      release(&tickslock);
-      return -1;
-    }
     sleep(&ticks, &tickslock);
   }
   release(&tickslock);
