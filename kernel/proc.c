@@ -639,13 +639,16 @@ sched(void)
   uint temp = ticks;
   release(&tickslock);
   p->proc_tms.stime += temp - p->ikstmp;
-  p->ikstmp = temp;
+  // p->ikstmp = temp;
   
 
   intena = mycpu()->intena;
   swtch(&p->context, &mycpu()->context);
   mycpu()->intena = intena;
 
+  acquire(&tickslock);
+  p->ikstmp = ticks;
+  release(&tickslock);
   // p->ikstmp = r_time();
   // p->ikstmp = readtime();
   
