@@ -65,7 +65,6 @@ procinit(void)
       p->proc_tms.stime = 0;
       p->proc_tms.cutime = 0;
       p->proc_tms.cstime = 0;
-      p->ikstmp = p->okstmp = r_time();
       p->ticks = 0;
       p->alarm = 0;
       p->sigflag = 0;
@@ -207,6 +206,11 @@ freeproc(struct proc *p)
   p->killed = 0;
   p->xstate = 0;
   p->state = UNUSED;
+  p->proc_tms.utime = 0;
+  p->proc_tms.stime = 0;
+  p->proc_tms.cutime = 0;
+  p->proc_tms.cstime = 0;
+  p->starttime = 0;
 }
 
 // Create a user page table for a given process,
@@ -391,7 +395,12 @@ fork(void)
 
   np->state = RUNNABLE;
 
+  acquire(&tickslock);
+  np->starttime = ticks;
+  release(&tickslock);
+  
   release(&np->lock);
+  // printf("%s starttime:%d\n",np->name,np->starttime);
 
   return pid;
 }
@@ -624,13 +633,22 @@ sched(void)
   if(intr_get())
     panic("sched interruptible");
 
-  p->proc_tms.stime += r_time() - p->ikstmp;
+  // p->proc_tms.stime += r_time() - p->ikstmp;
+  // p->proc_tms.stime += readtime() - p->ikstmp;
+  acquire(&tickslock);
+  uint temp = ticks;
+  release(&tickslock);
+  p->proc_tms.stime += temp - p->ikstmp;
+  p->ikstmp = temp;
+  
 
   intena = mycpu()->intena;
   swtch(&p->context, &mycpu()->context);
   mycpu()->intena = intena;
 
-  p->ikstmp = r_time();
+  // p->ikstmp = r_time();
+  // p->ikstmp = readtime();
+  
 }
 
 // Give up the CPU for one scheduling round.
@@ -665,7 +683,11 @@ forkret(void)
     myproc()->cwd = ename("/");
   }
 
-  myproc()->ikstmp = r_time();
+  // myproc()->ikstmp = r_time();
+  // myproc()->ikstmp = readtime();
+  acquire(&tickslock);
+  myproc()->ikstmp = ticks;
+  release(&tickslock);
   usertrapret();
 }
 
@@ -872,10 +894,12 @@ void proc_read(int pid, char* s)
   }else if(p->state == RUNNABLE){
     strcat(s,"RUNNABLE\t");
   }else if(p->state == RUNNING){
-    strcat(s,"RUNNING\t\t");
+    strcat(s,"RUNNING \t");
   }else{
     strcat(s,"ZOMBIE\t\t");
   }
+  if(p->pid == 1)
+    p->parent->pid = 0;
   itoa(p->parent->pid,tmp);
   strcat(s,tmp);
   strcat(s,"\t");
@@ -920,4 +944,34 @@ int checkPid(int pid)
     }
   }
   return 0;
+}
+
+void proc_ps(int pid, struct procinfo* pi)
+{
+  struct proc *p;
+  for(p = proc; p < &proc[NPROC]; p++) {
+    if(pid == p->pid)
+    {
+      break;
+    }
+  }
+  pi->pid = p->pid;
+  pi->ppid = p->parent->pid;
+  if(p->pid == 1)
+    pi->ppid = 0;
+  pi->command[0] = '\0';
+  strcat(pi->command, p->name);
+  if(p->state == SLEEPING)
+  {
+    pi->state = 'S';
+  }
+  else
+  {
+    pi->state = 'R';
+  }
+  pi->times = p->proc_tms.stime + p->proc_tms.utime;
+  acquire(&tickslock);
+  pi->etime = ticks - p->starttime;
+  release(&tickslock);
+  pi->vsz = p->sz;
 }

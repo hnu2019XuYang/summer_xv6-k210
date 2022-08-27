@@ -10,6 +10,7 @@
 #include "trap.h"
 #include "times.h"
 #include "signal.h"
+#include "ps.h"
 
 // Saved registers for kernel context switches.
 struct context {
@@ -76,6 +77,8 @@ struct proc {
   uint64 ticks;
   uint64 alarm;
 
+  uint64 starttime;
+
   //signal
   uint64 sigflag;
   struct sigaction sigact[2];
@@ -110,5 +113,6 @@ void            procint(void);
 void            proc_read(int,char*);
 int             getPids(int*);
 int             checkPid(int);
+void            proc_ps(int, struct procinfo*);
 
 #endif

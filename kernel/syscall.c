@@ -124,6 +124,7 @@ extern uint64 sys_getmem(void);
 extern uint64 sys_alarm(void);
 extern uint64 sys_pause(void);
 extern uint64 sys_signal(void);
+extern uint64 sys_procps(void);
 
 static uint64 (*syscalls[])(void) = {
   [SYS_fork]        sys_fork,
@@ -158,6 +159,7 @@ static uint64 (*syscalls[])(void) = {
   [SYS_alarm]       sys_alarm,
   [SYS_pause]       sys_pause,
   [SYS_signal]      sys_signal,
+  [SYS_procps]    sys_procps,
 };
 
 static char *sysnames[] = {
@@ -193,6 +195,7 @@ static char *sysnames[] = {
   [SYS_alarm]       "alarm",
   [SYS_pause]       "pause",
   [SYS_signal]      "signal",
+  [SYS_procps]     "procps",
 };
 
 void

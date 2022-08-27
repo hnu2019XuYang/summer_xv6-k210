@@ -11,6 +11,7 @@
 #include "include/string.h"
 #include "include/printf.h"
 #include "include/signal.h"
+#include "include/vm.h"
 
 extern int exec(char *path, char **argv);
 
@@ -173,7 +174,9 @@ uint64 sys_alarm(void)
   if(argint(0, &seconds) < 0)
     return -1;
   struct proc* p = myproc();
+  acquire(&tickslock);
   p->ticks = ticks;
+  release(&tickslock);
   p->alarm = seconds*5;
   return 0;
 }
@@ -209,4 +212,23 @@ uint64 sys_signal(void)
     }
   }
   return 0;
+}
+
+uint64 sys_procps(void)
+{
+  uint64 addr;
+  if(argaddr(0, &addr) < 0)
+    return -1;
+  int pids[NPROC];
+  struct procinfo pinfo[NPROC];
+  int i;
+  uint64 len = 0;
+  int cnt = getPids(pids);
+  for(i = 0; i < cnt; i++)
+  {
+    proc_ps(pids[i],&pinfo[i]);
+    len += sizeof(pinfo[i]);
+  }
+  copyout2(addr,(char*)pinfo,len);
+  return cnt;
 }

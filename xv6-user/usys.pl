@@ -47,3 +47,4 @@ entry("getmem");
 entry("alarm");
 entry("pause");
 entry("signal");
+entry("procps");

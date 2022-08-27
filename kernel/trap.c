@@ -63,7 +63,11 @@ usertrap(void)
 
   struct proc *p = myproc();
   
-  uint64 temp = r_time();
+  // uint64 temp = r_time();
+  // uint64 temp = readtime();
+  acquire(&tickslock);
+  uint64 temp = ticks;
+  release(&tickslock);
   p->ikstmp = temp;
   p->proc_tms.utime += temp - p->okstmp;
 
@@ -132,7 +136,11 @@ usertrapret(void)
   // we're back in user space, where usertrap() is correct.
   intr_off();
 
-  uint64 temp = r_time();
+  // uint64 temp = r_time();
+  // uint64 temp = readtime();
+  acquire(&tickslock);
+  uint64 temp = ticks;
+  release(&tickslock);
   p->okstmp = temp;
   p->proc_tms.stime += temp - p->ikstmp;
 

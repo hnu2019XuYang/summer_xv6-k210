@@ -212,6 +212,7 @@ UPROGS=\
 	$U/_alarm\
 	$U/_alarmtest2\
 	$U/_alarmtest3\
+	$U/_ps\
 
 	# $U/_forktest\
 	# $U/_ln\

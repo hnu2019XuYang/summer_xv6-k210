@@ -3,6 +3,7 @@
 #include "kernel/include/fcntl.h"
 #include "kernel/include/times.h"
 #include "kernel/include/signal.h"
+#include "kernel/include/ps.h"
 
 struct stat;
 struct rtcdate;
@@ -43,6 +44,7 @@ int getmem(void);
 uint alarm(uint seconds);
 void pause(void);
 void (*signal(int sig, void (*func)(int)))(int);
+int procps(struct procinfo*);
 
 // ulib.c
 int stat(const char*, struct stat*);
@@ -61,3 +63,6 @@ void free(void*);
 int atoi(const char*);
 int memcmp(const void *, const void *, uint);
 void *memcpy(void *, const void *, uint);
+char* strncpy(char*, const char*, int);
+int strncmp(const char*, const char*, uint);
+void itoa(uint n, char *s);
