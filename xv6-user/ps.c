@@ -79,7 +79,7 @@ void format_time(char* times, uint64 ticks)
 	hh = ticks / 60;
 	times[0] = '\0';
 	itoa(hh,tmp);
-	if(hh > 10){
+	if(hh >= 10){
 		strcat(times,tmp);
 	}else{
 		strcat(times,"0");
@@ -87,7 +87,7 @@ void format_time(char* times, uint64 ticks)
 	}
 	strcat(times,":");
 	itoa(mm,tmp);
-	if(mm > 10){
+	if(mm >= 10){
 		strcat(times,tmp);
 	}else{
 		strcat(times,"0");
@@ -95,7 +95,7 @@ void format_time(char* times, uint64 ticks)
 	}
 	strcat(times,":");
 	itoa(ss,tmp);
-	if(ss > 10){
+	if(ss >= 10){
 		strcat(times,tmp);
 	}else{
 		strcat(times,"0");
